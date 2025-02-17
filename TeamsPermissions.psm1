@@ -33,11 +33,9 @@ $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 #Check if NickNames passed in arguments or if need to read
 If ($MailNickNames -ne "")
     {
-    Write-host "Converting argument to array"
+    $MailNickNames = $MailNickNames.Replace(" ","")
     $MailNickNames = $MailNickNames.Replace(","," ")
     $teamMailNickNames = [array]$MailNickNames.Split(" ")
-    Write-Host $teamMailNickNames
-    pause
     }
 else
     {
