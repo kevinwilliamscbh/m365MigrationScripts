@@ -19,7 +19,7 @@ param (
   [string]$ClientCode = "CBH",
   [string]$ImportFile,
   [string]$BaseUri,
-  [string]$teamMailNickNames
+  [string]$MailNickNames
 )
 
 $ErrorActionPreference = "Stop"
@@ -31,14 +31,14 @@ $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if NickNames passed in arguments or if need to read
-Write-Host $teamMailNickNames
-Write-host $teamMailNickNames.Length
-Write-host $teamMailNickNames.ToString()
-Write-Host $teamMailNickNames.Split(",")
-If ($teamMailNickNames -ne $null)
+Write-Host $MailNickNames
+Write-host $MailNickNames.Length
+Write-host $MailNickNames.ToString()
+Write-Host $MailNickNames.Split(",")
+If ($MailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
-    $teamMailNickNames = $teamMailNickNames.Split(",")
+    $teamMailNickNames = $MailNickNames.Split(",")
     Write-Host $teamMailNickNames
     pause
     }
