@@ -1,4 +1,5 @@
-﻿<#********************************************************************
+﻿
+<#********************************************************************
 Export Teams permissions,
 store export in Blob Container
 
@@ -10,14 +11,13 @@ Usage: TeamsPermissions -SharedAccessToken 0000-0000-0000-0000-000 -BaseURI "htt
    ImportFile should contain a single MailNickName per line, with no header
    Include SA key in filename if required
 
-
 *********************************************************************#>
 
 #Require Shared Access Token
 param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
-  [string]$BaseUri = "https://bittitanmigrationangeion.blob.core.windows.net/uploaddata",
   [string]$ImportFile,
+  [string]$BaseUri = "https://bittitanmigrationangeion.blob.core.windows.net/uploaddata",
   [string]$ExportFileName
 )
 
@@ -157,4 +157,3 @@ If ($check -eq $exportFile)
     Write-Host "File successfully uploaded" -ForegroundColor Yellow
     Disconnect-MicrosoftTeams -Confirm:$false
     }
-
