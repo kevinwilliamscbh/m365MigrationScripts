@@ -22,9 +22,10 @@ Updated 17FEB2025
 #Require Shared Access Token
 param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
-  [string]$BaseUri = "https://bittitanmigrationangeion.blob.core.windows.net/uploaddata",
+  [string]$ClientCode = "CBH",
   [string]$ImportFile,
-  [string]$ExportFileName
+  [string]$BaseUri,
+  [string]$Mailboxes
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,34 +33,24 @@ $exportFile = "Mailbox,User,Permission`n"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 $exchangeMailboxes = $null
 $readSharedMailboxes = $false
+$exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
 
-If ($ExportFileName.Length -eq 0)
+#Check if mailboxes passed in arguments or if need to reach from Exhange Online
+If ($Mailboxes -ne "")
     {
-    $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
-    $exportFileName = "drcTeamsPermissions-" + $timeStamp + ".csv"
-    $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
+    $Mailboxes = $Mailboxes.Replace(" ","")
+    $Mailboxes = $Mailboxes.Replace(","," ")
+    $exchangeMailboxes = [array]$exchangeMailboxes.split(" ")
+    }
+else
+    {
+    $readSharedMailboxes = $true
     }
 
-#<#----- Delete $exchangeMailboxes variable to return all shared mailboxes
-#<#----- Supplying ImportFile will override $exchangeMailboxes
-$exchangeMailboxes = 
-                    @(
-                        "Claimsdept@DonlinRecano.com"
-                        "Docket@donlinrecano.com"
-                        "DRCDoculinks@Donlinrecano.com"
-                        "drcevents@donlinrecano.com"
-                        "Inquiries@donlinrecano.com"
-                        "Enoticing@donlinrecano.com"
-                        "enotices@donlinrecano.com"
-                        "jobtickets@donlinrecano.com"
-                        "madoffnoticing@donlinrecano.com"
-                    )
-#<------------------------------------------------------------#>
-#<------------------------------------------------------------#>
-
 #Import Shared Mailbox list, if provided
-If ($ImportFile.Length -gt 0)
+If ($ImportFile -ne "")
     {
+    $readSharedMailboxes = $true
     If ($ImportFile.Substring(0,5) -eq "https")
         {
         $exchangeMailboxes = (Invoke-WebRequest -Uri $ImportFile -Method Get).Content
@@ -69,13 +60,7 @@ If ($ImportFile.Length -gt 0)
         $exchangeMailboxes = Import-CSV -Path $ImportFile
         }
     }
-else
-    {
-    if ($exchangeMailboxes -eq $null)
-        {
-        $readSharedMailboxes = $true
-        }
-    }
+
 
 #Connect to Exchange Online PowerShell
 $connectionInfo = Get-ConnectionInformation | ?{$_.Name -like "ExchangeOnline*"}
@@ -148,4 +133,3 @@ If ($check -eq $exportFile)
     Write-Host "File successfully uploaded" -ForegroundColor Yellow
     Disconnect-ExchangeOnline -Confirm:$false
     }
-}
