@@ -90,11 +90,15 @@ If ($readTeams)
     {
     $teamMailNickNames = (Get-Team).MailNickName
     }
+
+#Obtain Team Channels
+Write-host $teamMailNickNames
 ForEach($team in $teamMailNickNames)
     {
     $addTeam = $true
     try
         {
+        Write-Host $team
         $teamInfo = Get-Team -MailNickName $team
         }
         catch
