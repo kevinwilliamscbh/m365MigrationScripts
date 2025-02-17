@@ -148,7 +148,7 @@ try
     catch
         {
         Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "ExportFileURI:"$ExportFilUri
+        Write-Host "ExportFileURI:"$exportFileUri
         throw "File upload failed"
         }
 try
