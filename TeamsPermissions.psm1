@@ -16,10 +16,10 @@ Usage: TeamsPermissions -SharedAccessToken 0000-0000-0000-0000-000 -BaseURI "htt
 #Require Shared Access Token
 param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
-  [string]$ImportFile,
-  [string]$BaseUri = "https://bittitanmigrationangeion.blob.core.windows.net/uploaddata",
   [string]$ClientCode = "CBH",
-  [string]$ExportFileName
+  [string]$ImportFile,
+  [string]$BaseUri,
+  [string]$teamMailNickNames
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,43 +27,25 @@ $exportFile = "Team,MailNick,Channel,UPN,DisplayName,Role`n"
 $teams = @()
 $teamMailNickName = @()
 $readTeams = $false
-
-If ($ExportFileName.Length -eq 0)
-    {
-    $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
-    $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
-    $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
-    }
-
-#<#----- Delete $teamMailNickName variable to return all Teams
-#<#----- Supplying ImportFile will override $teamMailNickName
-$teamMailNickName = @(
-                      "ProjectDemo12"
-                      "DemoProject4"
-                      "ScottMaddenTestDemo"
-                      "ComplexProcessManagementDemo"
-                      "ManagedServices"
-                      "SMProjectTemplate"
-                        )
-#<------------------------------------------------------------#>
-#<------------------------------------------------------------#>
+$timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
+$exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
+$exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Retrieve Team GroupIDs and DisplayNames *Required for retrieving members*
 If ($ImportFile.Length -gt 0)
     {
-    try
+    If ($ImportFile.Substring(0,5) -eq "https")
         {
-        $teamMailNickName = Import-CSV -Path $ImportFile
+        $teamMailNickNames = (Invoke-WebRequest -Uri $ImportFile -Method Get).Content
         }
-        catch
-            {
-            Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Red
-            Throw "Error occured during file import"
-            }
+    else
+        {
+        $teamMailNickNames = Import-CSV -Path $ImportFile
+        }
     }
 else
     {
-    if($teamMailNickName.Length -eq 0)
+    if($teamMailNickNames.Length -eq 0)
         {
         $readTeams = $true
         }
@@ -88,9 +70,9 @@ Try
 
 If ($readTeams)
     {
-    $teamMailNickName = (Get-Team).MailNickName
+    $teamMailNickNames = (Get-Team).MailNickName
     }
-ForEach($team in $teamMailNickName)
+ForEach($team in $teamMailNickNames)
     {
     $addTeam = $true
     try
