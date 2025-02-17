@@ -31,7 +31,7 @@ $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if NickNames passed in arguments or if need to read
-If ($teamMailNickNames.Length -gt 0)
+If ($teamMailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
     $teamMailNickNames = [array]$teamMailNickNames.split(",")
@@ -90,7 +90,6 @@ ForEach($team in $teamMailNickNames)
     $addTeam = $true
     try
         {
-        Write-Host $team
         $teamInfo = Get-Team -MailNickName $team
         }
         catch
