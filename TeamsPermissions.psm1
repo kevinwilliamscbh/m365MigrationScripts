@@ -36,7 +36,7 @@ If ($ExportFileName.Length -eq 0)
     }
 
 #<#----- Delete $teamMailNickName variable to return all Teams
-#----- Supplying ImportFile will override $teamMailNickName
+#<#----- Supplying ImportFile will override $teamMailNickName
 $teamMailNickName = @(
                       "ProjectDemo12"
                       "DemoProject4"
@@ -157,5 +157,4 @@ If ($check -eq $exportFile)
     Write-Host "File successfully uploaded" -ForegroundColor Yellow
     Disconnect-MicrosoftTeams -Confirm:$false
     }
-
 
