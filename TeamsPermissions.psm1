@@ -141,17 +141,26 @@ ForEach($team in $teams)
 
 #Upload file to Angeion File Share and verify
 $headers = @{'x-ms-blob-type' = 'BlockBlob'}
-Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportFile -Headers $headers -ErrorAction SilentlyContinue
+try
+    {
+    Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportFile -Headers $headers
+    }
+    catch
+        {
+        Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "ExportFileURI:"$ExportFilUri
+        throw "File upload failed"
+        }
 try
     {
     $check = Invoke-RestMethod -Uri $exportFileUri -Method Get -Headers $headers
     }
-catch
-    {
-    Write-Host "Unable to verify file upload" -ForegroundColor Red
-    Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Yellow
-    pause
-    }
+    catch
+        {
+        Write-Host "Unable to verify file upload" -ForegroundColor Red
+        Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Yellow
+        pause
+        }
 If ($check -eq $exportFile)
     {
     Write-Host "File successfully uploaded" -ForegroundColor Yellow
