@@ -19,7 +19,7 @@ param (
   [string]$ClientCode = "CBH",
   [string]$ImportFile,
   [string]$BaseUri,
-  [string]$teamMailNickNames
+  [array]$teamMailNickNames
 )
 
 $ErrorActionPreference = "Stop"
