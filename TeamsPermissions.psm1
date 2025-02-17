@@ -40,6 +40,7 @@ If ($teamMailNickNames -ne $null)
     Write-host "Converting argument to array"
     $teamMailNickNames = [array]$teamMailNickNames -split ","
     Write-Host $teamMailNickNames
+    pause
     }
 else
     {
