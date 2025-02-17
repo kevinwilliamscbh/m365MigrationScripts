@@ -19,17 +19,21 @@ param (
   [string]$ClientCode = "CBH",
   [string]$ImportFile,
   [string]$BaseUri,
-  [array]$teamMailNickNames
+  [string]$teamMailNickNames
 )
 
 $ErrorActionPreference = "Stop"
 $exportFile = "Team,MailNick,Channel,UPN,DisplayName,Role`n"
 $teams = @()
-$teamMailNickName = @()
 $readTeams = $false
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
+
+If ($teamMailNickNames.Length -ne 0)
+    {
+    $teamMailNickNames = [array]$teamMailNickNames.split(",")
+    }
 
 #Retrieve Team GroupIDs and DisplayNames *Required for retrieving members*
 If ($ImportFile.Length -gt 0)
