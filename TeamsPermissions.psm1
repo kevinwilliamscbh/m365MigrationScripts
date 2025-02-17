@@ -23,7 +23,6 @@ param (
 
 $ErrorActionPreference = "Stop"
 $exportFile = "Team,MailNick,Channel,UPN,DisplayName,Role`n"
-$exportFileUri = "$BaseUri/$exportFileName" + "?" + $sharedAccessToken
 $teams = @()
 $teamMailNickName = @()
 $readTeams = $false
@@ -148,7 +147,7 @@ try
     catch
         {
         Write-Host "Error Message: $($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "ExportFileURI:"$exportFileUri
+        Write-Host "ExportFileURI:" $exportFileUri
         throw "File upload failed"
         }
 try
