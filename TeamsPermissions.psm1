@@ -34,11 +34,11 @@ $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 Write-Host $MailNickNames
 Write-host $MailNickNames.Length
 Write-host $MailNickNames.ToString()
-Write-Host "Split" $MailNickNames.Split(" ") -ForegroundColor Yellow
+Write-Host "Split" $MailNickNames.Split(",") -ForegroundColor Yellow
 If ($MailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
-    $teamMailNickNames = $MailNickNames.Split(" ")
+    $teamMailNickNames = $MailNickNames.Split(",")
     Write-Host $teamMailNickNames
     pause
     }
