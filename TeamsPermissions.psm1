@@ -27,11 +27,11 @@ $exportFile = "Team,MailNick,Channel,UPN,DisplayName,Role`n"
 $teams = @()
 $readTeams = $false
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
-$exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
+$exportFileName = $ClientCode + "_TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if NickNames passed in arguments or if need to read
-If ($MailNickNames -ne $null)
+If ($MailNickNames.Length -gt 1)
     {
     Write-host "Converting argument to array"
     $MailNickNames = $MailNickNames.Replace(","," ")
