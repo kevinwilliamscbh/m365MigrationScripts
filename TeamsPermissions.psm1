@@ -18,6 +18,7 @@ param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
   [string]$ImportFile,
   [string]$BaseUri = "https://bittitanmigrationangeion.blob.core.windows.net/uploaddata",
+  [string]$ClientCode = "CBH",
   [string]$ExportFileName
 )
 
@@ -30,7 +31,7 @@ $readTeams = $false
 If ($ExportFileName.Length -eq 0)
     {
     $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
-    $exportFileName = "drcTeamsPermissions-" + $timeStamp + ".csv"
+    $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
     $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
     }
 
