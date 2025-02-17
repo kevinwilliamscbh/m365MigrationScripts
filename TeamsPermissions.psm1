@@ -31,7 +31,7 @@ $exportFileName = $ClientCode + "_TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if NickNames passed in arguments or if need to read
-If ($MailNickNames.Length -gt 1)
+If ($MailNickNames -ne "")
     {
     Write-host "Converting argument to array"
     $MailNickNames = $MailNickNames.Replace(","," ")
@@ -83,12 +83,11 @@ Try
 
 If ($readTeams)
     {
-    Write-Host "Reading all Teams from tenant"
+    Write-Host "Reading all Teams from tenant" -Foreground Yellow
     $teamMailNickNames = (Get-Team).MailNickName
     }
 
 #Obtain Team Channels
-Write-host $teamMailNickNames
 ForEach($team in $teamMailNickNames)
     {
     $addTeam = $true
