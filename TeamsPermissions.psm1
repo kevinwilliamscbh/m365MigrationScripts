@@ -30,23 +30,15 @@ $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
-#<#---------------------------------------------------------------
-#<#-- Remove teamMailNickNames variable to retrieve all Teams
-#<#---------------------------------------------------------------
-If ($teamMailNickNames.Length -eq 0)
+#Check if NickNames passed in arguments or if need to read
+If ($teamMailNickNames.Length -gt 0)
     {
-    $teamMailNickNames = @(
-                          "ProjectDemo12"
-                          "DemoProject4"
-                          "ScottMaddenTestDemo"
-                          "ComplexProcessManagementDemo"
-                          "ManagedServices"
-                          "SMProjectTemplate"
-                            )
+    Write-host "Converting argument to array"
+    $teamMailNickNames = [array]$teamMailNickNames.split(",")
     }
 else
     {
-    $teamMailNickNames = [array]$teamMailNickNames.split(",")
+    $readTeams = $true
     }
 
 #Check to see if file import required
