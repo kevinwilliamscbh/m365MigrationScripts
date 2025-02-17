@@ -38,7 +38,7 @@ Write-Host $teamMailNickNames.Split(",")
 If ($teamMailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
-    $teamMailNickNames = [array]$teamMailNickNames.split(",")
+    $teamMailNickNames = [array]$teamMailNickNames -split ","
     }
 else
     {
