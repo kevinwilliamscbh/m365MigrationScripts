@@ -30,12 +30,26 @@ $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
-If ($teamMailNickNames.Length -ne 0)
+#<#---------------------------------------------------------------
+#<#-- Remove teamMailNickNames variable to retrieve all Teams
+#<#---------------------------------------------------------------
+If ($teamMailNickNames.Length -eq 0)
+    {
+    $teamMailNickNames = @(
+                          "ProjectDemo12"
+                          "DemoProject4"
+                          "ScottMaddenTestDemo"
+                          "ComplexProcessManagementDemo"
+                          "ManagedServices"
+                          "SMProjectTemplate"
+                            )
+    }
+else
     {
     $teamMailNickNames = [array]$teamMailNickNames.split(",")
     }
 
-#Retrieve Team GroupIDs and DisplayNames *Required for retrieving members*
+#Check to see if file import required
 If ($ImportFile.Length -gt 0)
     {
     If ($ImportFile.Substring(0,5) -eq "https")
