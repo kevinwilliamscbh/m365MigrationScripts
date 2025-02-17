@@ -31,14 +31,11 @@ $exportFileName = $ClientCode + "TeamsPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if NickNames passed in arguments or if need to read
-Write-Host $MailNickNames
-Write-host $MailNickNames.Length
-Write-host $MailNickNames.ToString()
-Write-Host "Split" $MailNickNames.Split(",") -ForegroundColor Yellow
 If ($MailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
-    $teamMailNickNames = $MailNickNames.Split(",")
+    $MailNickNames = $MailNickNames.Replace(","," ")
+    $teamMailNickNames = [array]$MailNickNames.Split(" ")
     Write-Host $teamMailNickNames
     pause
     }
