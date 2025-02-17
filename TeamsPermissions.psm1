@@ -1,4 +1,5 @@
-﻿<#********************************************************************
+{
+<#********************************************************************
 Export Teams permissions,
 store export in Blob Container
 
@@ -157,5 +158,6 @@ If ($check -eq $exportFile)
     Write-Host "File successfully uploaded" -ForegroundColor Yellow
     Disconnect-MicrosoftTeams -Confirm:$false
     }
+}
 
 
