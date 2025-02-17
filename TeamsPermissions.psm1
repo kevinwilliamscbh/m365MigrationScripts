@@ -39,6 +39,7 @@ If ($teamMailNickNames -ne $null)
     {
     Write-host "Converting argument to array"
     $teamMailNickNames = [array]$teamMailNickNames -split ","
+    Write-Host $teamMailNickNames
     }
 else
     {
@@ -84,6 +85,7 @@ Try
 
 If ($readTeams)
     {
+    Write-Host "Reading all Teams from tenant"
     $teamMailNickNames = (Get-Team).MailNickName
     }
 
