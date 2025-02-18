@@ -135,6 +135,6 @@ catch
     }
 If ($check -eq $exportFile)
     {
-    Write-Host "File successfully uploaded" -ForegroundColor Yellow
+    Write-Host "File $exportFileName successfully uploaded" -ForegroundColor Yellow
     Disconnect-ExchangeOnline -Confirm:$false
     }
