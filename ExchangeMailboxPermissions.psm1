@@ -122,7 +122,7 @@ param (
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
 $exportData = "Mailbox,User,Permission`n"
-$exchangeMailboxes = $null
+$exchangeMailboxes = @()
 $readMailboxes = $false
 $exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
@@ -158,7 +158,7 @@ If ($ExportFile.Length -gt 0)
                     {
                     $ExportFile = $exportFile.Substring(0,($exportFile.Length-1))
                     }
-                $exportFileName = "$ExportFile" +"?" + $SharedAccessToken
+                $exportFileUri = "$ExportFile" +"?" + $SharedAccessToken
                 }
                 else
                 {
@@ -180,11 +180,11 @@ If ($ExportFile.Length -gt 0)
                 #Remove trailing slash from Base
                 If ($BaseUri.LastIndexOf("/") -eq ($BaseUri.Length-1))
                     {
-                    $exportFileName = "$BaseUri$ExportFile" +"?" + $SharedAccessToken
+                    $exportFileUri = "$BaseUri$ExportFile" +"?" + $SharedAccessToken
                     }
                 else
                     {
-                    $exportFileName = "$BaseUri/$ExportFile" +"?" + $SharedAccessToken
+                    $exportFileUri = "$BaseUri/$ExportFile" +"?" + $SharedAccessToken
                     }
                 }
                 else
@@ -208,7 +208,6 @@ If ($Mailboxes -ne "")
     {
     $Mailboxes = $Mailboxes.Replace(" ","")
     $Mailboxes = $Mailboxes.Replace(","," ")
-
     If ($Mailboxes.Contains(" "))
         {
         $exchangeMailboxes = [array]$Mailboxes.split(" ")

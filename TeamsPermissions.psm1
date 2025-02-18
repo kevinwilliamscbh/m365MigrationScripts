@@ -127,7 +127,6 @@ $writeLocal = $false
 If (($SharedAccessToken.Length -eq 0) -and ($ExportFile.Length -eq 0) -and ($BaseUri.Length -eq 0))
     {
     $writeLocal = $true
-    write-host "Detected local write"
     }
 
 #Check if need to update ExportFileName
@@ -140,7 +139,7 @@ If ($ExportFile.Length -gt 0)
         If ($ExportFile.Contains("?s"))
             {
             #exportfile contains https and sas token, no more work
-            $exportFileName = $ExportFile
+            $exportFileUri = $ExportFile
             }
             else
             {
@@ -154,7 +153,7 @@ If ($ExportFile.Length -gt 0)
                     {
                     $ExportFile = $exportFile.Substring(0,($exportFile.Length-1))
                     }
-                $exportFileName = "$ExportFile" +"?" + $SharedAccessToken
+                $exportFileUri = "$ExportFile" +"?" + $SharedAccessToken
                 }
                 else
                 {
@@ -176,11 +175,11 @@ If ($ExportFile.Length -gt 0)
                 #Remove trailing slash from Base
                 If ($BaseUri.LastIndexOf("/") -eq ($BaseUri.Length-1))
                     {
-                    $exportFileName = "$BaseUri$ExportFile" +"?" + $SharedAccessToken
+                    $exportFileUri = "$BaseUri$ExportFile" +"?" + $SharedAccessToken
                     }
                 else
                     {
-                    $exportFileName = "$BaseUri/$ExportFile" +"?" + $SharedAccessToken
+                    $exportFileUri = "$BaseUri/$ExportFile" +"?" + $SharedAccessToken
                     }
                 }
                 else
@@ -204,7 +203,14 @@ If ($MailNickNames -ne "")
     {
     $MailNickNames = $MailNickNames.Replace(" ","")
     $MailNickNames = $MailNickNames.Replace(","," ")
-    $teamMailNickNames = [array]$MailNickNames.Split(" ")
+    If ($MailNickNames.Contains(" "))
+        {
+        $teamMailNickNames = [array]$MailNickNames.Split(" ")
+        }
+     else
+        {
+        $teamMailNickNames = $MailNickNames
+        }
     }
 else
     {
@@ -240,10 +246,29 @@ Try
         {
         If ($PSVersionTable.PSEdition -eq "Desktop")
             {
+            #Need to check installed version
+            Try
+                {
+                $eom = Get-InstalledModule -Name "MicrosoftTeams"
+                If ([int]::Parse($eom.version.Replace(".","")) -lt 670)
+                    {
+                    Throw "Please update Microsoft Teams module to Verion 6.7.0"
+                    }
+                else
+                    {
+                    Import-Module -Name "MicrosoftTeams" -NoClobber
+                    }
+                }
+                Catch
+                    {
+                    Throw "Microsoft Teams module not installed"
+                    }
+            Import-Module MicrosoftTeams
             Connect-MicrosoftTeams 
             }
             else
             {
+            #Azure Cloud Shell
             Connect-MicrosoftTeams -UseDeviceAuthentication
             }
         }
@@ -315,7 +340,7 @@ If ($writeLocal)
         {
         Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
         Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-ExchangeOnline -Confirm:$false
+        Disconnect-MicrosoftTeams -Confirm:$false
         }
             catch
             {
@@ -329,7 +354,7 @@ else
         $headers = @{'x-ms-blob-type' = 'BlockBlob'}
         Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
         Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-ExchangeOnline -Confirm:$false
+        Disconnect-MicrosoftTeams -Confirm:$false
         }
         catch
             {
