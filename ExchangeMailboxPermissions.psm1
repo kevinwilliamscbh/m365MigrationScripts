@@ -276,12 +276,12 @@ If ($readMailboxes)
     If ($RecipientTypeDetails.Length -eq 0)
         {
         Write-Host "`nReading All mailboxes in tenant" -ForegroundColor Yellow
-        $exchangeMailboxes = (Get-Mailbox -ResultSize unlimited).UserPrincipalName | ?{$_.Name -notlike "DiscoverySearch*"}
+        $exchangeMailboxes = (Get-Mailbox -ResultSize unlimited).UserPrincipalName | ?{$_ -notlike "DiscoverySearchMailbox*"} | Sort
         }
     else
         {
         Write-Host "`nReading all $($RecipientTypeDetails)es in tenant" -ForegroundColor Yellow
-        $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName | ?{$_.Name -notlike "DiscoverySearch*"}
+        $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName | ?{$_ -notlike "DiscoverySearchMailbox*"} | Sort
         }
     }
 
