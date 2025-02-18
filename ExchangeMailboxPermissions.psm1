@@ -18,7 +18,7 @@
     Purpose/Change: Continued improvements and bug fixes
 
 .CHECKSUM
-    U$Script.GetHash() to verify checksum
+    U$Script.GetHashCode() to verify checksum
 
 .USAGE
 	
