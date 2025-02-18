@@ -1,23 +1,109 @@
-﻿
-<#********************************************************************
-Export Teams permissions,
-store export in Blob Container
+﻿<#
+.SYNOPSIS
+	This is a PowerShell module for Cherry Bekaert.
+	cbh.com
+	msdn.microsoft.com/powershell
 
-Usage: TeamsPermissions -SharedAccessToken 0000-0000-0000-0000-000 -BaseURI "https:/storage/container" -ImportFile "https:/storage/container/ImportFile.csv?SAS" | "C:/localfile"
+.DESCRIPTION
+    The script will export Team Channel Permissions
 
--SharedAccessToken (required)
--BaseURI (optional; if not supplied, will use hardcoded value)
--ImportFile (optional; if supplied, will override $teamMailNickName variable)
-   ImportFile should contain a single MailNickName per line, with no header
-   Include SA key in filename if required
+.NOTES
+    Version:        1.0.1
+    Author:         Kevin Williams
+    Website:        cbh.com
+    Creation Date:  2/15/2025
+    Purpose/Change: Initial script development
 
-Kevin Williams
-CBH
-Updated 17FEB2025
+    Update Date: 2/18/2025
+    Purpose/Change: Continued improvements and bug fixes
 
-*********************************************************************#>
+.CHECKSUM
+    Use $Script.GetHash() to verify checksum
 
-#Require Shared Access Token
+.USAGE
+	
+	##Pass arguments to Invoke-Command
+	$ClientCode = 'CBH'
+	$SAS = ''
+	$ImportFile = ''
+	$ExportFile = ''
+	$BaseUri = ''
+	$MailNickNames = ''
+	$Arguments = @($ClientCode, $SAS, $ImportFile, $ExportFile, $BaseUri, $MailNickNames)
+	##Invoke PowerShell Script 
+	$URI = 'https://raw.githubusercontent.com/kevinwilliamscbh/m365MigrationScripts/refs/heads/main/TeamsPermissions.psm1'
+	$Script = [ScriptBlock]::Create((new-object Net.WebClient).DownloadString($URI))	
+	Invoke-command -ScriptBlock $Script -ArgumentList $Arguments
+
+	How to use:
+	Fill in required arguments for script, then select entire script block and paste into PowerShell.
+	Can paste into PowerShell Desktop or PowerShell Core (Azure Cloud CLI).
+	
+	Arguments:
+	ClientCode:  Prepended to export file name if not provided in ExportFile **REQUIRED**
+	SAS: Shared Access Key and is required if not provided with ImportFile or ExportFile (depending on usage)
+	ImportFile:  CSV file containing objects to import. Can be 'importfile.csv', 'c:\data\importfile.csv', 
+            'https://storage/importfile.csv?sas', or 'https://storage/importfile.csv' (depending on usage)
+	ExportFile: CSV file contained exported data. Can be 'exportfile.csv', 
+            'c:\data\exportfile.csv', 'https://storage/exportfile.csv?sas', or 'https://storage/exportfile.csv' (depending on usage)
+	BaseUri: BASE URI used to construct URIs if full paths not provided.
+	MailNickNames: Contains string of Team MailNickNames for export of permissions. Ex: 'FinanceTeam,Project,Demo'
+	
+	Examples:
+	
+	Example 1 - Retrieve all Team permissions, store export file locally.
+	*Desktop will store file in current directory.
+	*Azure Cloud Shell will store file in %HOME% directory.
+	
+	$ClientCode = 'CBH'
+	$SAS = ''
+	$ImportFile = ''
+	$ExportFile = ''
+	$BaseUri = ''
+	$MailNickNames = ''
+	
+	Example 2 - Retrieve specified Team permissions, store export file locally.
+	*Desktop will store file in current directory.
+	*Azure Cloud Shell will store file in %HOME% directory.
+	
+	$ClientCode = 'CBH'
+	$SAS = ''
+	$ImportFile = ''
+	$ExportFile = ''
+	$BaseUri = ''
+	$MailNickNames = 'TeamMailNick1,TeamMailNick2, TeamMailNick3'
+	
+	Example 3 - Retrieve specified Team permissions, store in specified Azure Storage account
+	using URI constructed from BaseUri, generated filename, and SAS.
+	
+	$SAS = 'sp=shareaccesskey1fromstorageaccount'
+	$ImportFile = ''
+	$ExportFile = ''
+	$BaseUri = 'https://storage.blob.core.windows.net/uploaddata'
+	$MailNickNames = 'TeamMailNick1,TeamMailNick2, TeamMailNick3'
+	
+	Example 4 - Retrieve specified Team permissions, store in specified Azure Storage account
+	using URI constructed from BaseUri, provided filename, and SAS.
+	
+	$SAS = 'sp=shareaccesskey1fromstorageaccount'
+	$ImportFile = ''
+	$ExportFile = 'myFileName.csv'
+	$BaseUri = 'https://storage.blob.core.windows.net/uploaddata'
+	$MailNickNames = 'TeamMailNick1,TeamMailNick2, TeamMailNick3'
+	
+	Example 5 - Retrieve specified Team permissions, store in specified Azure Storage account
+	using URI provided by ExportFile.
+	
+	$SAS = 'sp=shareaccesskey1fromstorageaccount'
+	$ImportFile = ''
+	$ExportFile = 'https://storage.blob.core.windows.net/uploaddata/myExportFile.csv?sp=storageaccesskey'
+	$BaseUri = ''
+	$MailNickNames = 'TeamMailNick1,TeamMailNick2, TeamMailNick3'
+	
+	More Examples to Come!
+	
+#>
+
 param (
   [Parameter(Mandatory)][String]$ClientCode,
   [string]$SharedAccessToken,  
