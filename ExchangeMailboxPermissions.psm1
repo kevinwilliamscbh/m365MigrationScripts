@@ -127,6 +127,7 @@ $readMailboxes = $false
 $exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 $writeLocal = $false
+$noData = $true
 
 #Check if need to write local
 If (($SharedAccessToken.Length -eq 0) -and ($ExportFile.Length -eq 0) -and ($BaseUri.Length -eq 0))
@@ -308,6 +309,7 @@ ForEach ($mailbox in $exchangeMailboxes)
                 $outline =  $displayLine + "`n"
                 $exportData += $outline
                 write-host $displayLine
+                $noData = $false
                 }
             }
         }
@@ -322,37 +324,46 @@ ForEach ($mailbox in $exchangeMailboxes)
                 $outline =  $displayLine + "`n"
                 $exportData += $outline
                 write-host $displayLine
+                $noData = $false
                 }
             }
         }
     }
 
 #Write destination file
-If ($writeLocal)
+If ($noData -eq $true)
     {
-    try
-        {
-        Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
-        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-ExchangeOnline -Confirm:$false
-        }
-            catch
-            {
-            Write-Host "`nUnable to write export file" -ForegroundColor Red
-            }
+    Write-Host "No data collected. Exiting." -ForegroundColor Cyan
+    Disconnect-ExchangeOnline -Confirm:$false
     }
 else
     {
-    try
+    If ($writeLocal)
         {
-        $headers = @{'x-ms-blob-type' = 'BlockBlob'}
-        Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
-        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-ExchangeOnline -Confirm:$false
-        }
-        catch
+        try
             {
-            Write-Host "`nUnable to write export file" -ForegroundColor Red
+            Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
+            Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+            Disconnect-ExchangeOnline -Confirm:$false
             }
+                catch
+                {
+                Write-Host "`nUnable to write export file" -ForegroundColor Red
+                }
+        }
+    else
+        {
+        try
+            {
+            $headers = @{'x-ms-blob-type' = 'BlockBlob'}
+            Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
+            Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+            Disconnect-ExchangeOnline -Confirm:$false
+            }
+            catch
+                {
+                Write-Host "`nUnable to write export file" -ForegroundColor Red
+                }
+        }
     }
-
+    

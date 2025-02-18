@@ -122,6 +122,7 @@ $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 $ProgressPreference = "SilentlyContinue"
 $readTeams = $false
 $writeLocal = $false
+$noData = $true
 
 #Check if need to write local
 If (($SharedAccessToken.Length -eq 0) -and ($ExportFile.Length -eq 0) -and ($BaseUri.Length -eq 0))
@@ -329,35 +330,44 @@ ForEach($team in $teams)
             $outLine = $displayLine + "`n"
             $exportData += $outLine
             Write-Host $displayLine
+            $noData = $false
             }
         }
     }
 
 #Write destination file
-If ($writeLocal)
+If ($noData -eq $true)
     {
-    try
-        {
-        Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
-        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-MicrosoftTeams -Confirm:$false
-        }
-            catch
-            {
-            Write-Host "`nUnable to write export file" -ForegroundColor Red
-            }
+    Write-Host "No data collected. Exiting." -ForegroundColor Cyan 
+    Disconnect-MicrosoftTeams -Confirm:$false
     }
 else
     {
-    try
+    If ($writeLocal)
         {
-        $headers = @{'x-ms-blob-type' = 'BlockBlob'}
-        Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
-        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-        Disconnect-MicrosoftTeams -Confirm:$false
-        }
-        catch
+        try
             {
-            Write-Host "`nUnable to write export file" -ForegroundColor Red
+            Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
+            Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+            Disconnect-MicrosoftTeams -Confirm:$false
             }
+                catch
+                {
+                Write-Host "`nUnable to write export file" -ForegroundColor Red
+                }
+        }
+    else
+        {
+        try
+            {
+            $headers = @{'x-ms-blob-type' = 'BlockBlob'}
+            Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
+            Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+            Disconnect-MicrosoftTeams -Confirm:$false
+            }
+            catch
+                {
+                Write-Host "`nUnable to write export file" -ForegroundColor Red
+                }
+        }
     }
