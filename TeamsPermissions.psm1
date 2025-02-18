@@ -11,6 +11,10 @@ Usage: TeamsPermissions -SharedAccessToken 0000-0000-0000-0000-000 -BaseURI "htt
    ImportFile should contain a single MailNickName per line, with no header
    Include SA key in filename if required
 
+Kevin Williams
+CBH
+Updated 17FEB2025
+
 *********************************************************************#>
 
 #Require Shared Access Token
