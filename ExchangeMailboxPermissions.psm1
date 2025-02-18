@@ -96,6 +96,7 @@ If ($connectionInfo.State -ne "Connected")
     }
 If ($readSharedMailboxes)
     {
+    Write-Host "Reading all Shared mailboxes in tenant"
     $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize unlimited).UserPrincipalName
     }
 
