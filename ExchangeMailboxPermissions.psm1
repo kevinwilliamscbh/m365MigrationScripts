@@ -49,7 +49,7 @@ else
 #Import Shared Mailbox list, if provided
 If ($ImportFile -ne "")
     {
-    $readSharedMailboxes = $true
+    $readSharedMailboxes = $false
     If ($ImportFile.Substring(0,5) -eq "https")
         {
         $exchangeMailboxes = (Invoke-WebRequest -Uri $ImportFile -Method Get).Content
