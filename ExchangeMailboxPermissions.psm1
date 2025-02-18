@@ -10,6 +10,8 @@ Usage: ExchangeMailboxPermissions -SharedAccessToken 0000-0000-0000-0000-000 -Ba
 -ImportFile (optional; if supplied, will override $teamMailNickName variable)
    ImportFile should contain a single Shared Mailbox UPN per line, with no header
    Include SA key in filename if required
+ -Mailboxes (options; if not supplied will pull all shared mailboxes)
+ -Domain (required in mailbox option used)
 
 Kevin Williams
 CBH
@@ -19,22 +21,20 @@ Updated 17FEB2025
 
 *********************************************************************#>
 
-#Require Shared Access Token
 param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
-  [string]$ClientCode = "CBH",
+  [string]$ClientCode = 'CBH',
   [string]$ImportFile,
   [string]$BaseUri,
-  [string]$Mailboxes,
-  [string]$Domain
+  [string]$Mailboxes
 )
 
 $ErrorActionPreference = "Stop"
 $exportFile = "Mailbox,User,Permission`n"
-$exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 $exchangeMailboxes = $null
 $readSharedMailboxes = $false
 $exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
+$exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 
 #Check if mailboxes passed in arguments or if need to reach from Exhange Online
 If ($Mailboxes -ne "")
@@ -72,14 +72,13 @@ If ($connectionInfo.State -ne "Connected")
         Try
             {
             $eom = Get-InstalledModule -Name "ExchangeOnlineManagement"
-            If ([int]::Parse($eom.version.Replace(".","")) -lt 370)
+            If ([int]::Parse($eom.version.Replace(".","")) -lt 360)
                 {
                 Throw "Please update Exchange Online Management module to Verion 3.7.0"
                 }
             else
                 {
                 Import-Module -Name "ExchangeOnlineManagement" -NoClobber
-                Break
                 }
             }
             Catch
@@ -97,7 +96,7 @@ If ($connectionInfo.State -ne "Connected")
     }
 If ($readSharedMailboxes)
     {
-    $exchangeMailboxes = Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize unlimited
+    $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize unlimited).UserPrincipalName
     }
 
 #Begin collecting shared mailbox statistics
