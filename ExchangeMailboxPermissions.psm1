@@ -104,7 +104,9 @@ If ($readSharedMailboxes)
 #Begin collecting shared mailbox statistics
 ForEach ($mailbox in $exchangeMailboxes)
     {
-    $permissions = Get-MailboxPermission -Identity ($mailbox.TrimEnd()) -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
+    $mailbox = $mailbox.TrimEnd()
+    $mailbox = $mailbox.TrimStart()
+    $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
     If ($permissions -ne $null)
         {
         ForEach ($user in $permissions)
