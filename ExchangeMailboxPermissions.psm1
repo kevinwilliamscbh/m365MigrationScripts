@@ -119,7 +119,6 @@ param (
   [string]$Mailboxes,
   [string]$RecipientTypeDetails
 )
-
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
 $exportData = "Mailbox,User,Permission`n"
@@ -145,7 +144,7 @@ If ($ExportFile.Length -gt 0)
         If ($ExportFile.Contains("?s"))
             {
             #exportfile contains https and sas token, no more work
-            $exportFileName = $ExportFile
+            $exportFileUri = $ExportFile
             }
             else
             {
@@ -209,7 +208,15 @@ If ($Mailboxes -ne "")
     {
     $Mailboxes = $Mailboxes.Replace(" ","")
     $Mailboxes = $Mailboxes.Replace(","," ")
-    $exchangeMailboxes = [array]$Mailboxes.split(" ")
+
+    If ($Mailboxes.Contains(" "))
+        {
+        $exchangeMailboxes = [array]$Mailboxes.split(" ")
+        }
+    else
+        {
+        $exchangeMailboxes = $Mailboxes
+        }
     }
 else
     {
@@ -269,12 +276,12 @@ If ($readMailboxes)
     If ($RecipientTypeDetails.Length -eq 0)
         {
         Write-Host "`nReading All mailboxes in tenant" -ForegroundColor Yellow
-        $exchangeMailboxes = (Get-Mailbox -ResultSize unlimited).UserPrincipalName
+        $exchangeMailboxes = (Get-Mailbox -ResultSize unlimited).UserPrincipalName | ?{$_.Name -notlike "DiscoverySearch*"}
         }
     else
         {
         Write-Host "`nReading all $($RecipientTypeDetails)es in tenant" -ForegroundColor Yellow
-        $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName
+        $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName | ?{$_.Name -notlike "DiscoverySearch*"}
         }
     }
 
@@ -282,8 +289,16 @@ If ($readMailboxes)
 ForEach ($mailbox in $exchangeMailboxes)
     {
     $mailbox = $mailbox.Replace(" ","")
-    $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
-    $sendAsPerms = Get-RecipientPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.Trustee -ne "NT AUTHORITY\SELF"}
+    Write-Host "`nProcessing mailbox $mailbox" -ForegroundColor Yellow
+    try
+        {
+        $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
+        $sendAsPerms = Get-RecipientPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.Trustee -ne "NT AUTHORITY\SELF"}
+        }
+        catch
+            {
+            Write-host "$mailbox not found" -ForegroundColor Red
+            }
     If ($permissions -ne $null)
         {
         ForEach ($user in $permissions)
