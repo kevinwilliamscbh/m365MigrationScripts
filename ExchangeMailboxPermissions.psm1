@@ -19,6 +19,7 @@ Updated 17FEB2025
 
 *********************************************************************#>
 
+#Require Shared Access Token
 param (
   [Parameter(Mandatory)][string]$SharedAccessToken,
   [string]$ClientCode = 'CBH',
@@ -26,7 +27,7 @@ param (
   [string]$BaseUri,
   [string]$Mailboxes
 )
-
+$timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
 $exportFile = "Mailbox,User,Permission`n"
 $exchangeMailboxes = $null
@@ -101,7 +102,7 @@ If ($readSharedMailboxes)
 #Begin collecting shared mailbox statistics
 ForEach ($mailbox in $exchangeMailboxes)
     {
-    $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
+    $permissions = Get-MailboxPermission -Identity ($mailbox.TrimEnd()) -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
     If ($permissions -ne $null)
         {
         ForEach ($user in $permissions)
