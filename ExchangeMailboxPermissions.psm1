@@ -74,7 +74,7 @@ If ($connectionInfo.State -ne "Connected")
             $eom = Get-InstalledModule -Name "ExchangeOnlineManagement"
             If ([int]::Parse($eom.version.Replace(".","")) -lt 360)
                 {
-                Throw "Please update Exchange Online Management module to Verion 3.7.0"
+                Throw "Please update Exchange Online Management module to Verion 3.6.0"
                 }
             else
                 {
