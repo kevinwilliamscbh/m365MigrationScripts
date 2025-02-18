@@ -54,10 +54,12 @@ If ($ImportFile -ne "")
     If ($ImportFile.Substring(0,5) -eq "https")
         {
         $exchangeMailboxes = (Invoke-WebRequest -Uri $ImportFile -Method Get).Content
+        write-host "Imported mailboxes via Storage Api"
         }
     else
         {
         $exchangeMailboxes = Import-CSV -Path $ImportFile
+        Write-Host "Imported mailboxes via local file"
         }
     }
 
