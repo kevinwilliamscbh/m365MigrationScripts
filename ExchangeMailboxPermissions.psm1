@@ -41,7 +41,7 @@ If ($Mailboxes -ne "")
     {
     $Mailboxes = $Mailboxes.Replace(" ","")
     $Mailboxes = $Mailboxes.Replace(","," ")
-    $exchangeMailboxes = [array]$exchangeMailboxes.split(" ")
+    $exchangeMailboxes = [array]$Mailboxes.split(" ")
     }
 else
     {
