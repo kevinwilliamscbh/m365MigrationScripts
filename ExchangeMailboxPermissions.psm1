@@ -25,7 +25,8 @@ param (
   [string]$ClientCode = "CBH",
   [string]$ImportFile,
   [string]$BaseUri,
-  [string]$Mailboxes
+  [string]$Mailboxes,
+  [string]$Domain
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,7 +72,7 @@ If ($connectionInfo.State -ne "Connected")
         Try
             {
             $eom = Get-InstalledModule -Name "ExchangeOnlineManagement"
-            If ([int]::Parse($eom.version.Replace(".","")) -lt "370")
+            If ([int]::Parse($eom.version.Replace(".","")) -lt 370)
                 {
                 Throw "Please update Exchange Online Management module to Verion 3.7.0"
                 }
