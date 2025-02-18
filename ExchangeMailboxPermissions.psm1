@@ -259,7 +259,7 @@ If ($connectionInfo.State -ne "Connected")
     }
 If ($readSharedMailboxes)
     {
-    Write-Host "Reading all Shared mailboxes in tenant"
+    Write-Host "`nReading all Shared mailboxes in tenant" -ForegroundColor Yellow
     $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize unlimited).UserPrincipalName
     }
 
@@ -268,6 +268,7 @@ ForEach ($mailbox in $exchangeMailboxes)
     {
     $mailbox = $mailbox.Replace(" ","")
     $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
+    $sendAsPerms = Get-RecipientPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.Trustee -ne "NT AUTHORITY\SELF"}
     If ($permissions -ne $null)
         {
         ForEach ($user in $permissions)
@@ -277,7 +278,21 @@ ForEach ($mailbox in $exchangeMailboxes)
                 $displayLine = $mailbox + "," + $user.user + "," + $permission
                 $outline =  $displayLine + "`n"
                 $exportData += $outline
-                write-host $outline
+                write-host $displayLine
+                }
+            }
+        }
+
+    If ($sendAsPerms -ne $null)
+        {
+        ForEach ($SendAs in $sendAsPerms)
+            {
+            ForEach ($access in ([array]$SendAs.AccessRights.split(",").trim()))
+                {
+                $displayLine = $mailbox + "," + $SendAs.Trustee + "," + $access
+                $outline =  $displayLine + "`n"
+                $exportData += $outline
+                write-host $displayLine
                 }
             }
         }
