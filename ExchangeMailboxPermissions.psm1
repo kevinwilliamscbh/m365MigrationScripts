@@ -113,8 +113,9 @@ ForEach ($mailbox in $exchangeMailboxes)
             {
             ForEach ($permission in ([array]$user.AccessRights.split(",").trim()))
                 {
-                Write-host $user.user
-                $exportFile += $mailbox + "," + $user.user + "," + $permission + "`n"
+                $outline = $mailbox + "," + $user.user + "," + $permission + "`n"
+                $exportFile += $outline
+                write-host $outline
                 }
             }
         }
