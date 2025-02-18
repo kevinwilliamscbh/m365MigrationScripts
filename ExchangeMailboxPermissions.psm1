@@ -22,6 +22,7 @@
 
 .USAGE
 	
+--->
 	##Pass arguments to Invoke-Command
 	$ClientCode = 'CBH'
 	$SAS = ''
@@ -29,11 +30,13 @@
 	$ExportFile = ''
 	$BaseUri = ''
 	$Mailboxes = ''
-	$Arguments = @($ClientCode, $SAS, $ImportFile, $ExportFile, $BaseUri, $Mailboxes)
+    $RecipientTypeDetails = ''
+	$Arguments = @($ClientCode, $SAS, $ImportFile, $ExportFile, $BaseUri, $Mailboxes, $RecipientTypeDetails)
 	##Invoke PowerShell Script 
 	$URI = 'https://raw.githubusercontent.com/kevinwilliamscbh/m365MigrationScripts/refs/heads/main/ExchangeMailboxPermissions.psm1'
 	$Script = [ScriptBlock]::Create((new-object Net.WebClient).DownloadString($URI))	
 	Invoke-command -ScriptBlock $Script -ArgumentList $Arguments
+--->
 
 	How to use:
 	Fill in required arguments for script, then select entire script block and paste into PowerShell.
@@ -48,6 +51,8 @@
                 'https://storage/exportfile.csv?sas', or 'https://storage/exportfile.csv' (depending on usage)
 	BaseUri: BASE URI used to construct URIs if full paths not provided.
 	Mailboxes: Contains string of Shared Mailbox UPNs for export of permissions. Ex: 'FinanceTeam@cbh.com,Project@cbh.com,Demo@cbh.com'
+    RecpipientTypeDetails: The allowed values are: 'RoomMailbox', 'EquipmentMailbox', 'SchedulingMailbox', 'LegacyMailbox', 
+            'LinkedMailbox', 'LinkedRoomMailbox', 'UserMailbox', 'DiscoveryMailbox', 'TeamMailbox', 'SharedMailbox', 'GroupMailbox', or '' (for all)
 	
 	Examples:
 	
@@ -61,6 +66,7 @@
 	$ExportFile = ''
 	$BaseUri = ''
 	$Mailboxes = ''
+    $RecipientTypeDetails = ''
 	
 	Example 2 - Retrieve specified shared mailbox permissions, store export file locally.
 	*Desktop will store file in current directory.
@@ -104,9 +110,6 @@
 	
 #>	
 
-#RecipientTypeFlag
-RecipientTypeDetails
-
 param (
   [Parameter(Mandatory)][String]$ClientCode,
   [string]$SharedAccessToken, 
@@ -114,13 +117,14 @@ param (
   [string]$ExportFile,
   [string]$BaseUri,
   [string]$Mailboxes,
-  [string]$RecipientTypeDetails = "SharedMailbox"
+  [string]$RecipientTypeDetails
 )
+
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
 $exportData = "Mailbox,User,Permission`n"
 $exchangeMailboxes = $null
-$readSharedMailboxes = $false
+$readMailboxes = $false
 $exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
 $writeLocal = $false
@@ -209,13 +213,13 @@ If ($Mailboxes -ne "")
     }
 else
     {
-    $readSharedMailboxes = $true
+    $readMailboxes = $true
     }
 
 #Import Shared Mailbox list, if provided
 If ($ImportFile -ne "")
     {
-    $readSharedMailboxes = $false
+    $readMailboxes = $false
     If ($ImportFile.Substring(0,5) -eq "https")
         {
         $exchangeMailboxes = (Invoke-WebRequest -Uri $ImportFile -Method Get).Content
@@ -260,10 +264,18 @@ If ($connectionInfo.State -ne "Connected")
         Connect-ExchangeOnline -ShowBanner:$false -Device
         }
     }
-If ($readSharedMailboxes)
+If ($readMailboxes)
     {
-    Write-Host "`nReading all $($RecipientTypeDetails)exs in tenant" -ForegroundColor Yellow
-    $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName
+    If ($RecipientTypeDetails.Length -eq 0)
+        {
+        Write-Host "`nReading All mailboxes in tenant" -ForegroundColor Yellow
+        $exchangeMailboxes = (Get-Mailbox -ResultSize unlimited).UserPrincipalName
+        }
+    else
+        {
+        Write-Host "`nReading all $($RecipientTypeDetails)es in tenant" -ForegroundColor Yellow
+        $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName
+        }
     }
 
 #Begin collecting shared mailbox statistics
