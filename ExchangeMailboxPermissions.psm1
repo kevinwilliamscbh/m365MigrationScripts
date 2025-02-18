@@ -21,19 +21,96 @@ Updated 17FEB2025
 
 #Require Shared Access Token
 param (
-  [Parameter(Mandatory)][string]$SharedAccessToken,
-  [string]$ClientCode = 'CBH',
+  [Parameter(Mandatory)][String]$ClientCode,
+  [string]$SharedAccessToken, 
   [string]$ImportFile,
+  [string]$ExportFile,
   [string]$BaseUri,
   [string]$Mailboxes
 )
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
-$exportFile = "Mailbox,User,Permission`n"
+$exportData = "Mailbox,User,Permission`n"
 $exchangeMailboxes = $null
 $readSharedMailboxes = $false
 $exportFileName = $ClientCode + "_MailboxPermissions-" + $timeStamp + ".csv"
 $exportFileUri = "$BaseUri/$exportFileName" + "?" + $SharedAccessToken
+$writeLocal = $false
+
+#Check if need to write local
+If (($SharedAccessToken.Length -eq 0) -and ($ExportFile.Length -eq 0) -and ($BaseUri.Length -eq 0))
+    {
+    $writeLocal = $true
+    }
+
+#Check if need to update ExportFileName
+If ($ExportFile.Length -gt 0)
+    {
+    #export file set
+    If ($ExportFile.Substring(0,5) -eq "https")
+        {
+        #using https
+        If ($ExportFile.Contains("?s"))
+            {
+            #exportfile contains https and sas token, no more work
+            $exportFileName = $ExportFile
+            }
+            else
+            {
+            #SAS not present
+            If ($SharedAccessToken.Length -gt 0)
+                {
+                #SAS token provided
+                #Construct URL of Exportfile + SAS
+                #Remove trailing slash if detected
+                If ($ExportFile.LastIndexOf("/") -eq ($ExportFile.Length-1))
+                    {
+                    $ExportFile = $exportFile.Substring(0,($exportFile.Length-1))
+                    }
+                $exportFileName = "$ExportFile" +"?" + $SharedAccessToken
+                }
+                else
+                {
+                #sas token not provided
+                Throw "SharedAccessToken missing - unable to construct export file"
+                }
+            }
+        }
+        else
+        {
+        #not using https
+        If ($BaseUri.Length -gt 0)
+            {
+            #Exportfile set using BaseURL
+            If ($SharedAccessToken.Length -gt 0)
+                {
+                #Exportfile, BaseUriSet, and SAS Set
+                #Construct URL
+                #Remove trailing slash from Base
+                If ($BaseUri.LastIndexOf("/") -eq ($BaseUri.Length-1))
+                    {
+                    $exportFileName = "$BaseUri$ExportFile" +"?" + $SharedAccessToken
+                    }
+                else
+                    {
+                    $exportFileName = "$BaseUri/$ExportFile" +"?" + $SharedAccessToken
+                    }
+                }
+                else
+                {
+                #SAS not set
+                Throw "SharedAccessToken missing - unable to construct export file"
+                }
+            }
+            else
+            {
+            #Export file set and missing BaseURI
+            $exportFileName = $ExportFile
+            $writeLocal = $true
+            #Throw "BASEUuri missing - unable to construct export file"
+            }
+        }    
+    }
 
 #Check if mailboxes passed in arguments or if need to reach from Exhange Online
 If ($Mailboxes -ne "")
@@ -104,8 +181,7 @@ If ($readSharedMailboxes)
 #Begin collecting shared mailbox statistics
 ForEach ($mailbox in $exchangeMailboxes)
     {
-    $mailbox = $mailbox.TrimEnd()
-    $mailbox = $mailbox.TrimStart()
+    $mailbox = $mailbox.Replace(" ","")
     $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
     If ($permissions -ne $null)
         {
@@ -113,28 +189,41 @@ ForEach ($mailbox in $exchangeMailboxes)
             {
             ForEach ($permission in ([array]$user.AccessRights.split(",").trim()))
                 {
-                $outline = $mailbox + "," + $user.user + "," + $permission + "`n"
-                $exportFile += $outline
+                $displayLine = $mailbox + "," + $user.user + "," + $permission
+                $outline =  $displayLine + "`n"
+                $exportData += $outline
                 write-host $outline
                 }
             }
         }
     }
 
-#Upload file to Angeion File Share and verify
-$headers = @{'x-ms-blob-type' = 'BlockBlob'}
-Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportFile -Headers $headers
-try
+#Write destination file
+If ($writeLocal)
     {
-    $check = Invoke-RestMethod -Uri $exportFileUri -Method Get -Headers $headers
+    try
+        {
+        Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
+        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+        Disconnect-ExchangeOnline -Confirm:$false
+        }
+            catch
+            {
+            Write-Host "`nUnable to write export file" -ForegroundColor Red
+            }
     }
-catch
+else
     {
-    Write-Host "Unable to verify file upload" -ForegroundColor Red
-    break
+    try
+        {
+        $headers = @{'x-ms-blob-type' = 'BlockBlob'}
+        Invoke-RestMethod -Uri $exportFileUri -Method Put -Body $exportData -Headers $headers
+        Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
+        Disconnect-ExchangeOnline -Confirm:$false
+        }
+        catch
+            {
+            Write-Host "`nUnable to write export file" -ForegroundColor Red
+            }
     }
-If ($check -eq $exportFile)
-    {
-    Write-Host "File $exportFileName successfully uploaded" -ForegroundColor Yellow
-    Disconnect-ExchangeOnline -Confirm:$false
-    }
+
