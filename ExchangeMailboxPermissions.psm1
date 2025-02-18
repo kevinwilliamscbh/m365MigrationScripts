@@ -104,6 +104,8 @@
 	
 #>	
 
+#RecipientTypeFlag
+RecipientTypeDetails
 
 param (
   [Parameter(Mandatory)][String]$ClientCode,
@@ -111,7 +113,8 @@ param (
   [string]$ImportFile,
   [string]$ExportFile,
   [string]$BaseUri,
-  [string]$Mailboxes
+  [string]$Mailboxes,
+  [string]$RecipientTypeDetails = "SharedMailbox"
 )
 $timeStamp = (Get-Date).ToString("yyMMdd_HHmm")
 $ErrorActionPreference = "Stop"
@@ -259,8 +262,8 @@ If ($connectionInfo.State -ne "Connected")
     }
 If ($readSharedMailboxes)
     {
-    Write-Host "`nReading all Shared mailboxes in tenant" -ForegroundColor Yellow
-    $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails SharedMailbox -ResultSize unlimited).UserPrincipalName
+    Write-Host "`nReading all $($RecipientTypeDetails)exs in tenant" -ForegroundColor Yellow
+    $exchangeMailboxes = (Get-Mailbox -RecipientTypeDetails $RecipientTypeDetails -ResultSize unlimited).UserPrincipalName
     }
 
 #Begin collecting shared mailbox statistics
