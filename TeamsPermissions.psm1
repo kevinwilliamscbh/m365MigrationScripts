@@ -134,7 +134,9 @@ ForEach($team in $teams)
         Write-Host "Processing Channel $channel in Team" $team.DisplayName
         ForEach($user in $users)
             {
-            $exportFile += $team.DisplayName + "," + $team.MailNick + "," + $channel + "," + $user.User + "," + $user.Name + "," + $user.Role + "`n"
+            $outLine = $team.DisplayName + "," + $team.MailNick + "," + $channel + "," + $user.User + "," + $user.Name + "," + $user.Role + "`n"
+            $exportFile += $outLine
+            Write-Host $outLine
             }
         }
     }
@@ -163,6 +165,6 @@ try
         }
 If ($check -eq $exportFile)
     {
-    Write-Host "File successfully uploaded" -ForegroundColor Yellow
+    Write-Host "File $exportFileName successfully uploaded" -ForegroundColor Yellow
     Disconnect-MicrosoftTeams -Confirm:$false
     }
