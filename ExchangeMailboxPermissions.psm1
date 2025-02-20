@@ -288,12 +288,14 @@ If ($readMailboxes)
 #Begin collecting shared mailbox statistics
 ForEach ($mailbox in $exchangeMailboxes)
     {
+    $needMailboxHeader = $true
     $mailbox = $mailbox.Replace(" ","")
     Write-Host "`nProcessing mailbox $mailbox" -ForegroundColor Yellow
     try
         {
-        $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"}
-        $sendAsPerms = Get-RecipientPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.Trustee -ne "NT AUTHORITY\SELF"}
+        $permissions = Get-MailboxPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.User -ne "NT AUTHORITY\SELF"} | ?{$_.User.Substring(0,4) -ne "S-1-"}
+        $sendAsPerms = Get-RecipientPermission -Identity $mailbox -ErrorAction SilentlyContinue | ?{$_.Trustee -ne "NT AUTHORITY\SELF"} | ?{$_.Trustee.Substring(0,4) -ne "S-1-"}
+        #$mailboxSize = Get-MailboxStatistics -Identity $mailbox  
         }
         catch
             {
@@ -305,6 +307,12 @@ ForEach ($mailbox in $exchangeMailboxes)
             {
             ForEach ($permission in ([array]$user.AccessRights.split(",").trim()))
                 {
+                If ($needMailboxHeader -eq $true)
+                    {
+                    $needMailboxHeader = $false
+                    $outline = $Mailbox + "," + "PERMISSIONS`n"
+                    $exportData += $outline
+                    }           
                 $displayLine = $mailbox + "," + $user.user + "," + $permission
                 $outline =  $displayLine + "`n"
                 $exportData += $outline
@@ -320,6 +328,12 @@ ForEach ($mailbox in $exchangeMailboxes)
             {
             ForEach ($access in ([array]$SendAs.AccessRights.split(",").trim()))
                 {
+                If ($needMailboxHeader -eq $true)
+                    {
+                    $needMailboxHeader = $false
+                    $outline = $Mailbox + "," + "PERMISSIONS`n"
+                    $exportData += $outline
+                    }    
                 $displayLine = $mailbox + "," + $SendAs.Trustee + "," + $access
                 $outline =  $displayLine + "`n"
                 $exportData += $outline
@@ -344,7 +358,7 @@ else
             {
             Out-File -FilePath $exportFileName -Encoding ascii -InputObject $exportData -Force
             Write-Host "`nFile $exportFileName successfully created" -ForegroundColor Yellow
-            Disconnect-ExchangeOnline -Confirm:$false
+            #Disconnect-ExchangeOnline -Confirm:$false
             }
                 catch
                 {

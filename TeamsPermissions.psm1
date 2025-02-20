@@ -277,17 +277,18 @@ Try
 If ($readTeams)
     {
     Write-Host "Processing all Teams from tenant" -Foreground Yellow
-    $teamMailNickNames = (Get-Team).MailNickName
+    $teamMailNickNames = (Get-Team).MailNickName | Sort
     }
 
 #Obtain Team Channels
+$teams = @()
 ForEach($team in $teamMailNickNames)
     {
     $addTeam = $true
     $team = $team.replace(" ","")
     try
         {
-        $teamInfo = Get-Team -MailNickName $team
+        $teamInfo = ((Get-Team -MailNickName $team | Sort -Property MailNickName)[0])
         }
         catch
             {
@@ -297,7 +298,7 @@ ForEach($team in $teamMailNickNames)
             }
     try
         {
-        $channels = [array](Get-TeamAllChannel -GroupId $teamInfo.GroupID).DisplayName
+        $channels = [array](Get-TeamAllChannel -GroupId $teamInfo.GroupId).DisplayName | Sort
         }
         catch
             {
@@ -320,12 +321,33 @@ ForEach($team in $teamMailNickNames)
 #Retrieve members and update export data
 ForEach($team in $teams)
     {
+    $needTeamHeader = $true
     ForEach($channel in $team.channels)
         {
-        $users = Get-TeamChannelUser -GroupID $team.GroupID -DisplayName $channel
-        Write-Host "`nProcessing Channel $channel in Team" $team.DisplayName -ForegroundColor Yellow
+        $needChannelHeader = $true
+        Try
+           {
+           $users = Get-TeamChannelUser -GroupID $team.GroupID -DisplayName $channel | Sort
+           Write-Host "`nProcessing Channel $channel in Team" $team.DisplayName -ForegroundColor Yellow
+           }
+            catch
+                {
+                write-host "No permission to access channel $channel in team $($team.DisplayName)" -ForegroundColor Red
+                }     
         ForEach($user in $users)
             {
+            If ($needTeamHeader -eq $true)
+                {
+                $needTeamHeader = $false
+                $displayLine = $team.DisplayName + "," + $team.MailNick + ",TEAM`n"
+                $exportData += $displayLine
+                }
+            If ($needChannelHeader -eq $true)
+                {
+                $needChannelHeader = $false
+                $displayLine = $team.DisplayName + "," + $team.MailNick + "," + $channel + ",CHANNEL`n"
+                $exportData += $displayLine
+                }
             $displayLine = $team.DisplayName + "," + $team.MailNick + "," + $channel + "," + $user.User + "," + $user.Name + "," + $user.Role
             $outLine = $displayLine + "`n"
             $exportData += $outLine
